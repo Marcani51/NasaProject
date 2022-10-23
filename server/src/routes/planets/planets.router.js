@@ -4,11 +4,11 @@ const express=require('express');
 //const planetController=require('./planets.controller');
 ////cara kedua
 const{
-  getAllPlanets
+httpGetAllPlanets
 }=require('./planets.controller');
 
 const planetRouter=express.Router();
 
-planetRouter.get('/planets',getAllPlanets);
+planetRouter.get('/',httpGetAllPlanets);
 
 module.exports=planetRouter;

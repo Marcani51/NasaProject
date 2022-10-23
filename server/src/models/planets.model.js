@@ -44,7 +44,11 @@ function loadPlanetData(){
   });
 }
 
+function getAllPlanets(){
+  return habitablePlanets;
+}
+
 module.exports={
   loadPlanetData, //// akan digunakan saat promise selesai terjadi
-  planets:habitablePlanets,
+  getAllPlanets
 };
