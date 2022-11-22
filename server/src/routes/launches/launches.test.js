@@ -1,6 +1,10 @@
+const request=require('supertest');
+////perlu include app.js yg merupakan isian dari supertest memintaa app
+const app=require('../../app');
+
 describe('Test GET /launches',()=>{
   test('it should responce with 200 success',()=>{
-    const responce=200;
+    const responce=request(app);
     expect(responce).toBe(200);
   });
 });
