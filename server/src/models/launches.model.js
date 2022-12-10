@@ -1,8 +1,9 @@
-//const lauches = require('./launches.mongoo');
+const launchesDatabase = require('./launches.mongoo');
+const planets=require('./planets.mongoo');
 
-const launches=new Map();
+const DEFAULT_FLIGHT_NUMBER=100;
 
-let lastestFlightNumber=100;
+const   launches=new Map();
 
 const launch={
   flightNumber:100,
@@ -15,37 +16,81 @@ const launch={
   succes:true,
 };
 
-launches.set(launch.flightNumber, launch); // untuk mapping dengan flight number atau sama dengan id
+saveLunch(launch);
 
-function existLaunchWithId(launchId){
-  return launches.has(launchId);
+
+async function existLaunchWithId(launchId){
+  return await launchesDatabase.find({
+    flightNumber:launchId,
+  });
 }
 
-function getAllLaunches(){
-  return Array.from(launches.values()); //// di taruh sini biar controller tinggal terima jadi data tanpa mikir convert
+async function getLatestLaunches(){
+  const lastestLaunch = await launchesDatabase
+  .findOne()
+  .sort('-flightNumber'); ///ascending sort
+
+  if(!lastestLaunch){
+    return DEFAULT_FLIGHT_NUMBER; ////  jika tidak ketemu akan mulai dari 100
+  }
+  return lastestLaunch.flightNumber;
 }
 
-function addNewLaunch(launch){
-  lastestFlightNumber++; // unutuk key atau id yg di tambahkan
-  launches.set(
-    lastestFlightNumber,
-    Object.assign(launch,{
-      customer:["Zero To mastery","Nasa"],
-      upcoming:true,
-      succes:true,
-      flightNumber:lastestFlightNumber,
-  }));
+async function getAllLaunches(){
+  return await launchesDatabase.find({},{
+    "_id":0,
+    "__v":0 
+  });   //{}untuk filter
 }
 
-function abortLaunchById(launchId){
-  const aborted=launches.get(launchId);
-  aborted.upcoming=false;
-  aborted.succes=false;
-  return aborted;
+//mongo jalan di async
+async function saveLunch(launch){
+
+  const planet= await planets.findOne({
+    keplerName: launch.target,
+  });
+
+  if(!planet){
+      throw new Error("No matching planet was found");
+  }
+
+  //// tekhnik upserts
+  await launchesDatabase.findOneAndUpdate({
+    flightNumber:launch.flightNumber,
+
+  },launch,{
+    upsert:true,
+  });
 }
+
+async function scheduleNewLaunch(launch){
+  const newFlightNumber = await getLatestLaunches() + 1;
+
+  const newLaunch= Object.assign(launch,{
+    succes:true,
+    upcoming:true,
+    customers:["Zero To mastery","Nasa"],
+    flightNumber:newFlightNumber, 
+  });
+
+  await saveLunch(newLaunch);
+}
+
+
+async function abortLaunchById(launchId){
+  const abort = await launchesDatabase.updateOne({
+    flightNumber:launchId,
+  },{
+    $set: { success: false, upcoming: false },
+  });
+  console.log(abort);
+  return abort.modifiedCount===1;
+}
+
 module.exports={
   getAllLaunches,
-  addNewLaunch,
+  
+  scheduleNewLaunch,
   existLaunchWithId,
   abortLaunchById
 }

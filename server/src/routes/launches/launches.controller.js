@@ -1,18 +1,19 @@
 const { json } = require('express');
 const {
   getAllLaunches,
-  addNewLaunch,
   existLaunchWithId,
-  abortLaunchById
+  abortLaunchById,
+  scheduleNewLaunch
 }=require('../../models/launches.model');
 
-function httpGetAllLaunches(req,res){
-  return res.status(200).json(getAllLaunches());
+async function httpGetAllLaunches(req,res){
+  return res.status(200).json(await getAllLaunches());
 }
 
-function httpAddNewLaunch(req,res){
+async function httpAddNewLaunch(req,res){
   const launch=req.body;
   console.log(launch);
+
   if(!launch.mission || !launch.rocket || !launch.launchDate 
     || !launch.target){
       return res.status(400).json({
@@ -26,25 +27,35 @@ function httpAddNewLaunch(req,res){
         })
       }
       //// kalau sudah di return fungsi bawahnya tidak akan di eksekusi
-      addNewLaunch(launch);
+      await scheduleNewLaunch(launch);
+      console.log(launch  );
       return res.status(201).json(launch);
     
   
 }
 
-function httpAbortLaunch(req,res){
+async function httpAbortLaunch(req,res){
   const launchId=Number(req.params.id);
 
+  const existLaunch=await existLaunchWithId(launchId);
   //jika tidak ada launchid
-  if(!existLaunchWithId(launchId)){
+  if(!existLaunch){
     return res.status(400).json({
       error:"Launch Not Found"
     });
   }
 
   //jika ada
-  const aborted= abortLaunchById(launchId);
-  return res.status(200).json(aborted);
+  const aborted= await abortLaunchById(launchId);
+
+  if(aborted == false){
+    return res.status(400),json({
+      error:'launch not aborted'
+    });;
+  }
+  return res.status(200).json({
+    ok:true,
+  });
 }
 
 module.exports={

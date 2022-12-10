@@ -8,6 +8,7 @@ const app =require('./app.js');
 const {loadPlanetData}=require('./models/planets.model'); // digunakan untuk sambungaan promise pada model saat selesai  
 
 const PORT = process.env.PORT || 8000;
+
 ////// sebelum tanda '?' untuk auto create db setelah kita simpan data pertama
 const MONGOO_URL="mongodb+srv://Marcani51:marcellus.denta96@cluster0.umbob.mongodb.net/nasa?retryWrites=true&w=majority";  
 
