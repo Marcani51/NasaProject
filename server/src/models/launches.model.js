@@ -3,7 +3,7 @@ const planets=require('./planets.mongoo');
 
 const DEFAULT_FLIGHT_NUMBER=100;
 
-const   launches=new Map();
+const launches=new Map();
 
 const launch={
   flightNumber:100,
@@ -89,7 +89,6 @@ async function abortLaunchById(launchId){
 
 module.exports={
   getAllLaunches,
-  
   scheduleNewLaunch,
   existLaunchWithId,
   abortLaunchById
