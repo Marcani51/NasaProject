@@ -28,6 +28,7 @@ async function loadLaunchData(){
   console.log("downloading launch data...");
   const responce= await axios.post(SPACEX_API_URL,{
     query:{},
+    pagination:false,
     options:{
       populate:[  
         {
