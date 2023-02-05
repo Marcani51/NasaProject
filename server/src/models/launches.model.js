@@ -1,3 +1,6 @@
+const axios=require('axios');
+const { response } = require('../app');
+
 const launchesDatabase = require('./launches.mongoo');
 const planets=require('./planets.mongoo');
 
@@ -5,19 +8,64 @@ const DEFAULT_FLIGHT_NUMBER=100;
 
 const launches=new Map();
 
+/// cooment di samping untuk mapping dri spacex api (loadlaunchData)
 const launch={
-  flightNumber:100,
-  misson:"kepler exploration x",
-  rocket:"EXPLORE IS1",
-  launchDate:new Date('December 27, 2030'),
-  target:"Kepler-442 b",
-  customer:['ZTM','NASA'],
-  upcoming:true,
-  succes:true,
+  flightNumber:100,//flight_number
+  misson:"kepler exploration x",//name
+  rocket:"EXPLORE IS1", //exists rocket.name
+  launchDate:new Date('December 27, 2030'), //date_local
+  target:"Kepler-442 b",// not applicable
+  customer:['ZTM','NASA'], //payload.customers for each payload
+  upcoming:true, //upcoming
+  succes:true, //success
 };
 
 saveLunch(launch);
 
+//ambil data di spacex untuk pagination
+const SPACEX_API_URL='https://api.spacexdata.com/v4/launches/query';
+async function loadLaunchData(){
+  console.log("downloading launch data...");
+  const responce= await axios.post(SPACEX_API_URL,{
+    query:{},
+    options:{
+      populate:[  
+        {
+          path:'rocket',
+          select:{
+            name:1
+          }
+        },
+        {
+          path:'payloads',
+          select:{
+            'customers':1
+          }
+        }
+      ]
+    }
+  });
+
+  const launcDocs = responce.data.docs;
+  for(const launchDoc of launcDocs ){
+    const payloads=launchDoc['payloads'];
+    const customers=payloads.flatMap((payload)=>{
+      return payload['customers'];
+    });
+
+    const launch={
+      flightNumber:launchDoc['flight_number'],
+      mission:launchDoc['name'],
+      rocket:launchDoc['rocket']['name'],
+      launchDate:launchDoc['date_local'],
+      upcoming:launchDoc['upcoming'],
+      success:launchDoc['success'],
+      customers,
+    };
+
+    console.log(`${launch.flightNumber} ${launch.mission}`);
+  }
+}
 
 async function existLaunchWithId(launchId){
   return await launchesDatabase.find({
@@ -91,5 +139,6 @@ module.exports={
   getAllLaunches,
   scheduleNewLaunch,
   existLaunchWithId,
-  abortLaunchById
+  abortLaunchById,
+  loadLaunchData  
 }
