@@ -2,7 +2,7 @@
 
 /// jadi di sini pure untuk  setting keperluan server saja sehingga lebih mudah untuk diorganisir sendiri
 ////dan setting express  berada terpisan dari server setting
-
+require('dotenv').config({ path:".env" });
 const http=require('http');
 const mongoose=require('mongoose');
 const app =require('./app.js');
@@ -12,7 +12,7 @@ const {loadLaunchData}=require('./models/launches.model');
 const PORT = process.env.PORT || 8000;
 
 ////// sebelum tanda '?' untuk auto create db setelah kita simpan data pertama
-const MONGOO_URL="mongodb+srv://Marcani51:marcellus.denta96@cluster0.umbob.mongodb.net/nasa?retryWrites=true&w=majority";  
+const MONGOO_URL=process.env.MONGO_URL;  
 
 const server = http.createServer(app); ///jadi semua middleware(di app.js) jga bisa ikut secara otomatis didalm server
 

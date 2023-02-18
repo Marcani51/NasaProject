@@ -117,7 +117,11 @@ async function getAllLaunches(skip, limit){
   return await launchesDatabase.find({},{
     "_id":0,
     "__v":0 
-  }).skip(skip).limit(limit);   //{}untuk filter
+  }).sort({
+    flightNumber:1 ///ascending:1, descending:-1
+  })
+  .skip(skip)
+  .limit(limit);   //{}untuk filter
 }
 
 //mongo jalan di async
